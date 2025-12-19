@@ -18,7 +18,7 @@ st.markdown("""
     .stExpander { background-color: #262730 !important; border: 1px solid #FF8C00 !important; }
     h1, h2, h3, p { color: #FAFAFA; }
     </style>
-    """, unsafe_allow_code=True)
+    """, unsafe_allow_html=True)
 
 # --- 3. PASSCODE PROTECTION ---
 def check_password():
