@@ -2,126 +2,141 @@ import streamlit as st
 import pandas as pd
 import hmac
 import os
+import io
 
-# --- 1. SOPHISTICATED BRANDING & UI (Black & Orange) ---
+# --- 1. EXECUTIVE BRANDING & UI ---
 st.set_page_config(page_title="Patent Discovery Portal", layout="wide")
 
 st.markdown("""
     <style>
-    /* Global Styles */
-    .stApp { background-color: #0E1117; color: #FFFFFF; }
+    /* Global Background and Text */
+    .stApp { background-color: #0E1117; color: #FFFFFF; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     
-    /* Center the login box */
+    /* Sophisticated Login Card */
     [data-testid="stForm"] {
-        border: 2px solid #FF8C00 !important;
-        border-radius: 15px;
-        background-color: #1c1e26;
-        padding: 30px;
-        max-width: 450px;
+        border: 1px solid #FF8C00 !important;
+        border-radius: 4px;
+        background-color: #161b22;
+        padding: 40px;
+        max-width: 500px;
         margin: auto;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
 
-    /* Primary Buttons (Branded Orange) */
-    div.stButton > button:first-child {
-        background-color: #FF8C00;
-        color: white;
-        border-radius: 8px;
-        border: none;
-        font-weight: bold;
+    /* Professional Orange Buttons */
+    div.stButton > button, div.stDownloadButton > button {
+        background-color: #FF8C00 !important;
+        color: #000000 !important;
+        border-radius: 2px !important;
+        border: none !important;
+        font-weight: 600 !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
         width: 100%;
-        transition: 0.3s;
+        height: 3em;
+        transition: all 0.3s ease;
     }
-    div.stButton > button:hover {
-        background-color: #E67E00;
-        border: none;
-        color: white;
+    div.stButton > button:hover, div.stDownloadButton > button:hover {
+        background-color: #e67e00 !important;
+        box-shadow: 0 0 10px #FF8C00;
     }
 
-    /* Inputs and Dataframes */
-    .stTextInput input {
-        background-color: #262730;
-        color: white;
-        border: 1px solid #444;
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] { 
+        background-color: #000000 !important; 
+        border-right: 2px solid #FF8C00; 
     }
-    [data-testid="stSidebar"] { background-color: #000000; border-right: 1px solid #FF8C00; }
-    .stExpander { background-color: #1c1e26 !important; border: 1px solid #444 !important; }
+    
+    /* Search Input Contrast */
+    .stTextInput input {
+        background-color: #0d1117 !important;
+        color: #FF8C00 !important;
+        border: 1px solid #30363d !important;
+    }
+
+    /* Headers */
+    h1, h2, h3 { color: #FF8C00 !important; font-weight: 700 !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. CUSTOM LOGIN INTERFACE ---
+# --- 2. SECURE GATEWAY ---
 def check_password():
     if st.session_state.get("password_correct", False):
         return True
 
-    # Branding on Login Page
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
+        st.markdown("<br><br>", unsafe_allow_html=True)
         if os.path.exists("logo.png"):
             st.image("logo.png", use_container_width=True)
-        st.markdown("<h2 style='text-align: center; color: #FF8C00;'>Internal Search Portal</h2>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center;'>EXECUTIVE ACCESS ONLY</h3>", unsafe_allow_html=True)
         
-        with st.form("login_form"):
-            password = st.text_input("Security Passcode", type="password")
-            submit = st.form_submit_button("UNLOCk ACCESS")
-            
-            if submit:
-                if hmac.compare_digest(password, st.secrets["password"]):
+        with st.form("login_gateway"):
+            pwd = st.text_input("Security Passcode", type="password")
+            if st.form_submit_button("AUTHENTICATE"):
+                if hmac.compare_digest(pwd, st.secrets["password"]):
                     st.session_state["password_correct"] = True
                     st.rerun()
                 else:
-                    st.error("🚫 Access Denied")
+                    st.error("Invalid Credentials")
     return False
 
 if not check_password():
     st.stop()
 
-# --- 3. MAIN APP (AFTER LOGIN) ---
+# --- 3. DASHBOARD CONTENT ---
 with st.sidebar:
     if os.path.exists("logo.png"):
         st.image("logo.png", use_container_width=True)
+    st.markdown("<br><h4 style='text-align: center; color: #FF8C00;'>Patent Discovery v2.0</h4>", unsafe_allow_html=True)
     st.markdown("---")
-    st.markdown("<p style='color: #FF8C00; font-weight: bold;'>SYSTEM STATUS: ONLINE</p>", unsafe_allow_html=True)
-    st.info("Database: master_patents.csv")
 
-st.title("🔍 Patent Database Query")
+st.title("🔍 Database Query Engine")
 
 if os.path.exists("master_patents.csv"):
-    df = pd.read_csv("master_patents.csv")
-    
-    # Sophisticated Search Layout
-    with st.container():
-        st.markdown("### Search Filters")
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            q_app_num = st.text_input("Application #")
-            q_agent = st.text_input("Agent Name")
-        with c2:
-            q_title = st.text_input("Title Keyword")
-            q_country = st.text_input("Priority Country")
-        with c3:
-            q_type = st.text_input("Application Type")
-            q_class = st.text_input("Classification")
+    try:
+        df = pd.read_csv("master_patents.csv")
+        
+        # Advanced Multi-Criteria Filter
+        with st.container():
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                f_app = st.text_input("Application No.")
+                f_agent = st.text_input("Agent/Legal Representative")
+            with c2:
+                f_title = st.text_input("Patent Title Keywords")
+                f_country = st.text_input("Priority Country")
+            with c3:
+                f_type = st.text_input("App Type (ID)")
+                f_class = st.text_input("Classification Code")
 
-    # Filtering Logic
-    filtered = df.copy()
-    if q_app_num: filtered = filtered[filtered['Application Number'].astype(str).str.contains(q_app_num, case=False, na=False)]
-    if q_title: filtered = filtered[filtered['Title'].str.contains(q_title, case=False, na=False)]
-    if q_agent: filtered = filtered[filtered['Agent Name'].str.contains(q_agent, case=False, na=False)]
-    if q_country: filtered = filtered[filtered['Country Name (Priority)'].str.contains(q_country, case=False, na=False)]
-    if q_type: filtered = filtered[filtered['Application Type (ID)'].astype(str).str.contains(q_type, na=False)]
-    if q_class: filtered = filtered[filtered['Classification'].str.contains(q_class, case=False, na=False)]
+        # Core Search Logic
+        results = df.copy()
+        if f_app: results = results[results['Application Number'].astype(str).str.contains(f_app, case=False, na=False)]
+        if f_title: results = results[results['Title'].str.contains(f_title, case=False, na=False)]
+        if f_agent: results = results[results['Agent Name'].str.contains(f_agent, case=False, na=False)]
+        if f_country: results = results[results['Country Name (Priority)'].str.contains(f_country, case=False, na=False)]
+        if f_type: results = results[results['Application Type (ID)'].astype(str).str.contains(f_type, na=False)]
+        if f_class: results = results[results['Classification'].str.contains(f_class, case=False, na=False)]
 
-    # --- 4. BRANDED RESULTS ---
-    st.markdown(f"<h4 style='color: #FF8C00;'>Matches Found: {len(filtered)}</h4>", unsafe_allow_html=True)
-    
-    # Modern Table Display
-    st.dataframe(filtered, use_container_width=True, hide_index=True)
+        # --- 4. EXPORT AND DISPLAY ---
+        st.markdown(f"**Found {len(results)} matching records**")
+        
+        # Excel Download Feature
+        buffer = io.BytesIO()
+        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+            results.to_excel(writer, index=False, sheet_name='Search_Results')
+        
+        st.download_button(
+            label="📥 EXPORT SEARCH TO EXCEL",
+            data=buffer.getvalue(),
+            file_name="patent_search_results.xlsx",
+            mime="application/vnd.ms-excel"
+        )
 
-    # Detailed View in Branded Expanders
-    for _, row in filtered.iterrows():
-        with st.expander(f"📙 {row['Application Number']} | {row['Title']}"):
-            st.write(f"**Abstract:** {row['Abstract']}")
-            st.markdown(f"<span style='color: #FF8C00;'>Priority Number: {row['Priority Number']}</span>", unsafe_allow_html=True)
+        st.dataframe(results, use_container_width=True, hide_index=True)
 
+    except pd.errors.EmptyDataError:
+        st.error("The data file 'master_patents.csv' is currently empty. Please upload a populated file to GitHub.")
 else:
-    st.warning("Please upload 'master_patents.csv' to the GitHub repository to begin.")
+    st.warning("⚠️ Critical: 'master_patents.csv' not found in repository.")
