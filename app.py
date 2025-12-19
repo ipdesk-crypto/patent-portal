@@ -4,62 +4,56 @@ import hmac
 import os
 import io
 
-# --- 1. EXECUTIVE BRANDING & UI ---
-st.set_page_config(page_title="Patent Discovery Portal", layout="wide")
+# --- 1. PAGE CONFIG & SOPHISTICATED CSS ---
+st.set_page_config(page_title="Executive Patent Portal", layout="wide")
 
 st.markdown("""
     <style>
-    /* Global Background and Text */
-    .stApp { background-color: #0E1117; color: #FFFFFF; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    /* Professional Dark Background */
+    .stApp { background-color: #0E1117; color: #FFFFFF; font-family: 'Inter', sans-serif; }
     
-    /* Sophisticated Login Card */
+    /* Center and Style the Login Card */
     [data-testid="stForm"] {
         border: 1px solid #FF8C00 !important;
-        border-radius: 4px;
+        border-radius: 8px;
         background-color: #161b22;
         padding: 40px;
         max-width: 500px;
         margin: auto;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
 
-    /* Professional Orange Buttons */
+    /* Branded Orange Buttons */
     div.stButton > button, div.stDownloadButton > button {
         background-color: #FF8C00 !important;
         color: #000000 !important;
-        border-radius: 2px !important;
+        border-radius: 4px !important;
         border: none !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
         text-transform: uppercase;
-        letter-spacing: 1px;
         width: 100%;
-        height: 3em;
-        transition: all 0.3s ease;
+        transition: 0.3s ease all;
     }
     div.stButton > button:hover, div.stDownloadButton > button:hover {
-        background-color: #e67e00 !important;
-        box-shadow: 0 0 10px #FF8C00;
+        background-color: #FFB347 !important;
+        transform: translateY(-2px);
     }
 
-    /* Sidebar Styling */
-    [data-testid="stSidebar"] { 
-        background-color: #000000 !important; 
-        border-right: 2px solid #FF8C00; 
-    }
-    
-    /* Search Input Contrast */
+    /* Input Fields Branding */
     .stTextInput input {
         background-color: #0d1117 !important;
         color: #FF8C00 !important;
         border: 1px solid #30363d !important;
     }
 
-    /* Headers */
-    h1, h2, h3 { color: #FF8C00 !important; font-weight: 700 !important; }
+    /* Sidebar and Table Customization */
+    [data-testid="stSidebar"] { background-color: #000000 !important; border-right: 2px solid #FF8C00; }
+    .stDataFrame { border: 1px solid #30363d; border-radius: 8px; }
+    h1, h2, h3 { color: #FF8C00 !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. SECURE GATEWAY ---
+# --- 2. SECURE ACCESS GATEWAY ---
 def check_password():
     if st.session_state.get("password_correct", False):
         return True
@@ -67,76 +61,104 @@ def check_password():
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.markdown("<br><br>", unsafe_allow_html=True)
-        if os.path.exists("logo.png"):
-            st.image("logo.png", use_container_width=True)
-        st.markdown("<h3 style='text-align: center;'>EXECUTIVE ACCESS ONLY</h3>", unsafe_allow_html=True)
+        # Fixed for logo.jpeg extension
+        if os.path.exists("logo.jpeg"):
+            st.image("logo.jpeg", use_container_width=True)
+        st.markdown("<h2 style='text-align: center;'>SECURITY GATEWAY</h2>", unsafe_allow_html=True)
         
         with st.form("login_gateway"):
-            pwd = st.text_input("Security Passcode", type="password")
-            if st.form_submit_button("AUTHENTICATE"):
+            pwd = st.text_input("Enter Passcode", type="password")
+            if st.form_submit_button("AUTHENTICATE SYSTEM"):
                 if hmac.compare_digest(pwd, st.secrets["password"]):
                     st.session_state["password_correct"] = True
                     st.rerun()
                 else:
-                    st.error("Invalid Credentials")
+                    st.error("Invalid Credentials. Access Denied.")
     return False
 
 if not check_password():
     st.stop()
 
-# --- 3. DASHBOARD CONTENT ---
+# --- 3. MAIN DASHBOARD ---
 with st.sidebar:
-    if os.path.exists("logo.png"):
-        st.image("logo.png", use_container_width=True)
-    st.markdown("<br><h4 style='text-align: center; color: #FF8C00;'>Patent Discovery v2.0</h4>", unsafe_allow_html=True)
+    # Fixed for logo.jpeg extension
+    if os.path.exists("logo.jpeg"):
+        st.image("logo.jpeg", use_container_width=True)
     st.markdown("---")
+    st.markdown("<p style='text-align: center; color: #FF8C00; font-weight: bold;'>PORTAL STATUS: ACTIVE</p>", unsafe_allow_html=True)
+    
+    # Reset Button
+    if st.button("🔄 Clear All Filters"):
+        for key in st.session_state.keys():
+            if key.startswith('search_'):
+                st.session_state[key] = ""
+        st.rerun()
 
-st.title("🔍 Database Query Engine")
+st.title("🔍 Patent Database Query Engine")
 
+# --- 4. DATA LOADING & MULTI-FIELD SEARCH ---
 if os.path.exists("master_patents.csv"):
     try:
         df = pd.read_csv("master_patents.csv")
         
-        # Advanced Multi-Criteria Filter
-        with st.container():
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                f_app = st.text_input("Application No.")
-                f_agent = st.text_input("Agent/Legal Representative")
-            with c2:
-                f_title = st.text_input("Patent Title Keywords")
-                f_country = st.text_input("Priority Country")
-            with c3:
-                f_type = st.text_input("App Type (ID)")
-                f_class = st.text_input("Classification Code")
+        # 10 Query Fields Layout
+        st.markdown("### Search Parameters")
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            q_app_num = st.text_input("Application Number", key="search_1")
+            q_agent = st.text_input("Agent Name", key="search_2")
+            q_date = st.text_input("Application Date (YYYY-MM-DD)", key="search_3")
+            q_type = st.text_input("Application Type (ID)", key="search_4")
+        with c2:
+            q_title = st.text_input("Title Keyword", key="search_5")
+            q_country = st.text_input("Country (Priority)", key="search_6")
+            q_prio_num = st.text_input("Priority Number", key="search_7")
+        with c3:
+            q_abstract = st.text_input("Abstract Keyword", key="search_8")
+            q_class = st.text_input("Classification", key="search_9")
+            q_prio_date = st.text_input("Priority Date (YYYY-MM-DD)", key="search_10")
 
-        # Core Search Logic
-        results = df.copy()
-        if f_app: results = results[results['Application Number'].astype(str).str.contains(f_app, case=False, na=False)]
-        if f_title: results = results[results['Title'].str.contains(f_title, case=False, na=False)]
-        if f_agent: results = results[results['Agent Name'].str.contains(f_agent, case=False, na=False)]
-        if f_country: results = results[results['Country Name (Priority)'].str.contains(f_country, case=False, na=False)]
-        if f_type: results = results[results['Application Type (ID)'].astype(str).str.contains(f_type, na=False)]
-        if f_class: results = results[results['Classification'].str.contains(f_class, case=False, na=False)]
+        # Filtering Logic
+        f = df.copy()
+        if q_app_num: f = f[f['Application Number'].astype(str).str.contains(q_app_num, case=False, na=False)]
+        if q_title: f = f[f['Title'].str.contains(q_title, case=False, na=False)]
+        if q_abstract: f = f[f['Abstract'].str.contains(q_abstract, case=False, na=False)]
+        if q_agent: f = f[f['Agent Name'].str.contains(q_agent, case=False, na=False)]
+        if q_date: f = f[f['Application Date'].astype(str).str.contains(q_date, na=False)]
+        if q_class: f = f[f['Classification'].str.contains(q_class, case=False, na=False)]
+        if q_country: f = f[f['Country Name (Priority)'].str.contains(q_country, case=False, na=False)]
+        if q_prio_num: f = f[f['Priority Number'].astype(str).str.contains(q_prio_num, na=False)]
+        if q_prio_date: f = f[f['Priority Date'].astype(str).str.contains(q_prio_date, na=False)]
+        if q_type: f = f[f['Application Type (ID)'].astype(str).str.contains(q_type, na=False)]
 
-        # --- 4. EXPORT AND DISPLAY ---
-        st.markdown(f"**Found {len(results)} matching records**")
+        # --- 5. RESULTS & EXPORT ---
+        st.markdown("---")
+        res_col, dl_col = st.columns([3, 1])
+        with res_col:
+            st.subheader(f"Results: {len(f)} Records Found")
         
-        # Excel Download Feature
-        buffer = io.BytesIO()
-        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-            results.to_excel(writer, index=False, sheet_name='Search_Results')
-        
-        st.download_button(
-            label="📥 EXPORT SEARCH TO EXCEL",
-            data=buffer.getvalue(),
-            file_name="patent_search_results.xlsx",
-            mime="application/vnd.ms-excel"
-        )
+        with dl_col:
+            # Excel Export Feature
+            towrite = io.BytesIO()
+            f.to_excel(towrite, index=False, header=True)
+            towrite.seek(0)
+            st.download_button(
+                label="📥 Download to Excel",
+                data=towrite,
+                file_name="patent_export.xlsx",
+                mime="application/vnd.ms-excel"
+            )
 
-        st.dataframe(results, use_container_width=True, hide_index=True)
+        st.dataframe(f, use_container_width=True, hide_index=True)
 
-    except pd.errors.EmptyDataError:
-        st.error("The data file 'master_patents.csv' is currently empty. Please upload a populated file to GitHub.")
+        # Detailed View Expanders
+        for _, row in f.head(50).iterrows(): # Limit display for performance
+            with st.expander(f"📙 {row['Application Number']} — {row['Title']}"):
+                st.write(f"**Abstract:** {row['Abstract']}")
+                st.write(f"**Agent:** {row['Agent Name']} | **Type:** {row['Application Type (ID)']}")
+
+    except Exception as e:
+        st.error(f"Data Loading Error: {e}")
+        st.info("Ensure 'master_patents.csv' is properly formatted and not empty.")
 else:
-    st.warning("⚠️ Critical: 'master_patents.csv' not found in repository.")
+    st.warning("⚠️ Waiting for 'master_patents.csv' to be uploaded to GitHub.")
